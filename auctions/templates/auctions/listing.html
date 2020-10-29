@@ -1,0 +1,98 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+{% block body %}
+
+<h2><strong>{{ listing.title }}</strong></h2>
+
+{% if listing.active == False and currentbid != user %}
+<div>
+    {{ currentbid }}
+    <h4 style="color: red"><strong>Sorry, this listing has been closed</strong></h4>
+</div>
+{% endif %}
+
+{% for bid in bids %}
+{% if bid.bid == listing.price and bid.user == user and not listing.active %}
+<div>
+    <h4 style="color: green"><strong>Congrats, you have won this bid for ${{ listing.price }}</strong></h4>
+</div>
+{% endif %}
+{% endfor %}
+
+
+{% if user != listing.creator and user.is_authenticated %}
+<div>
+    <form method="post">
+        {% csrf_token %}
+        {% if user in listing.watchlist.all %}
+        <input type="submit" class="btn btn-sm btn-danger" value="Remove from watchlist" name="watchlist">
+        {% else %}
+        <input type="submit" class="btn btn-sm btn-secondary" value="Add to watchlist" name="watchlist">
+        {% endif %}
+    </form>
+</div><br>
+
+{% endif %}
+{% if message %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endif %}
+
+<div>
+    <img src="{{ listing.image.url }}" class="image-list">
+</div><br>
+
+<p><strong>Current price: ${{ listing.price }}</strong></p>
+
+{% if user.is_authenticated and listing.active %}
+<div class="mt-2">
+    <form action="{% url 'listing' listing.id %}" method='post'>
+        {% csrf_token %}
+        <p class="form-text text-muted">{{ bids.all|length }} bid(s) so far.
+            {% if user != listing.creator %}
+
+            {% for bid in bids %}
+            {% if bid.bid == listing.price and bid.user == user %}
+            Your bid is the current bid.</p>
+        {% endif %}
+        {% endfor %}
+
+        {{ bid_form|crispy }}
+        <input type="submit" value="Place Bid" class="btn btn-primary">
+        {% else %}
+        <br><input type="submit" value="Close Listing" class="btn btn-danger" name="active">
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+<div class="mt-2">
+    <h3><strong>Details:</strong></h3>
+    Listed by: {{ listing.creator.username }}</br>
+    {% if listing.category %}
+    Category: {{ listing.category }}
+    {% else %}
+    Category: No category listed
+    {% endif %}<br>
+    Description: {{ listing.description }}<br>
+    Created: {{ listing.date|date:"F d, Y" }}
+</div>
+
+<div class="mt-2">
+    <h3><strong>Comments:</strong></h3>
+    {% for comment in comments %}
+    <div class="border p-1 mt-2 pl-2">
+        <strong>{{ comment.user.username }}</strong> - {{ comment.comment }}
+    </div>
+    {% endfor %}
+    {% if user.is_authenticated %}</br>
+    <p><strong>Write a comment:</strong></p>
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        {{ comment_form|crispy }}
+        <input type="submit" value="Submit" class="btn btn-primary">
+    </form>
+    {% endif %}
+</div>
+
+
+{% endblock %}

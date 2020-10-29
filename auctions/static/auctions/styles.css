@@ -1,0 +1,20 @@
+* {
+    box-sizing: border-box;
+}
+
+
+.bg-clr {
+    background-color: #b7b7f0;
+  }
+
+.list-image {
+    min-width: 300px;
+    max-width: 500px;
+    max-height: 250px;
+}
+
+.image-list {
+    min-width: 300px;
+    max-width: 600px;
+    max-height: 400px;
+}
